@@ -1,12 +1,11 @@
-<head>
+<html lang="ko"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Busan Wheat Festival - Fixed &amp; Final</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@800&amp;display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&amp;display=swap" rel="stylesheet">
+    <title>Busan Wheat Festival - Master Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Nanum Gothic', sans-serif; cursor: crosshair; }
-        
         canvas { 
             display: block; 
             position: absolute; 
@@ -15,7 +14,6 @@
             cursor: pointer;
             pointer-events: auto !important; 
         }
-        
         #ui-layer {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -23,7 +21,6 @@
             display: none; width: 95%;
             pointer-events: none;
         }
-
         .text-stage {
             height: 12vw;
             position: relative;
@@ -32,7 +29,6 @@
             align-items: center;
             perspective: 1000px;
         }
-
         .rolling-text {
             font-size: 8.5vw;
             font-weight: 800;
@@ -43,11 +39,9 @@
             opacity: 0;
             filter: drop-shadow(0 10px 20px rgba(237, 145, 33, 0.4));
         }
-
         .text-1 { animation: rollingLoop3 9s infinite; }
         .text-2 { animation: rollingLoop3 9s infinite 3s; }
         .text-3 { animation: rollingLoop3 9s infinite 6s; }
-
         @keyframes rollingLoop3 {
             0% { opacity: 0; transform: rotateX(-90deg) translateY(50px); }
             3% { opacity: 1; transform: rotateX(0deg) translateY(0); }
@@ -55,16 +49,13 @@
             33% { opacity: 0; transform: rotateX(90deg) translateY(-50px); }
             100% { opacity: 0; }
         }
-
         #click-prompt {
             font-size: 3.5rem; color: #666; opacity: 0; margin-top: 50px;
             font-family: 'Nanum Pen Script', cursive;
         }
-
         .blink-fade-in { animation: fadeIn 0.8s ease-in forwards, blink 1.5s infinite 2s; }
         @keyframes fadeIn { to { opacity: 1; } }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-
         #bottom-banner {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; 
             background: #fff; color: #000; overflow: hidden;
@@ -74,30 +65,12 @@
         #banner-text-container { display: flex; white-space: nowrap; animation: marquee 60s linear infinite; }
         .banner-text { padding-right: 150px; font-weight: bold; font-size: 1.6rem; font-family: 'Nanum Pen Script', cursive; }
         @keyframes marquee { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
-
         #bg-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #fff; opacity: 0; z-index: 50; pointer-events: none;
             transition: opacity 1.5s ease-in-out;
         }
-
-        /* --- 저작권 표시: 우측 하단 배치 --- */
         #copyright-notice {
             position: fixed;
-            bottom: 70px; /* 전광판 배너 위에 위치 */
-            right: 20px; 
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.75rem;
-            z-index: 400;
-            pointer-events: none;
-            font-family: 'Nanum Gothic', sans-serif;
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        .ending-active #copyright-notice {
-            color: rgba(0, 0, 0, 0.2);
-            transition: color 1.5s ease-in-out;
-        }
-    </style>
-</head>
+            bottom: 70px; 
+            right: 20px;
