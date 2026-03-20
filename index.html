@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Busan Wheat Festival - High Readability Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+    <title>Busan Wheat Festival - Fixed &amp; Final</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&amp;display=swap" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Nanum Gothic', sans-serif; cursor: crosshair; }
         
@@ -82,255 +80,24 @@
             background: #fff; opacity: 0; z-index: 50; pointer-events: none;
             transition: opacity 1.5s ease-in-out;
         }
+
+        /* --- 저작권 표시: 우측 하단 배치 --- */
+        #copyright-notice {
+            position: fixed;
+            bottom: 70px; /* 전광판 배너 위에 위치 */
+            right: 20px; 
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.75rem;
+            z-index: 400;
+            pointer-events: none;
+            font-family: 'Nanum Gothic', sans-serif;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .ending-active #copyright-notice {
+            color: rgba(0, 0, 0, 0.2);
+            transition: color 1.5s ease-in-out;
+        }
     </style>
 </head>
-<body>
-
-<div id="bg-overlay"></div>
-<div id="ui-layer">
-    <div class="text-stage">
-        <div class="rolling-text text-1">2026 부산 밀 페스티벌</div>
-        <div class="rolling-text text-2">다양한 미식의 세계로</div>
-        <div class="rolling-text text-3">화명생태공원에서 만나요</div>
-    </div>
-    <div id="click-prompt">화면을 클릭해보세요</div>
-</div>
-
-<div id="bottom-banner">
-    <div id="banner-text-container"></div>
-</div>
-
-<canvas id="gameCanvas"></canvas>
-
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const uiLayer = document.getElementById('ui-layer');
-const uiPrompt = document.getElementById('click-prompt');
-const bgOverlay = document.getElementById('bg-overlay');
-const bottomBanner = document.getElementById('bottom-banner');
-const bannerList = document.getElementById('banner-text-container');
-
-let bricks = [];
-let balls = [];
-let items = [];
-let popups = []; 
-let paddle = { w: 220, h: 14, x: 0, y: 0 }; 
-let gameStarted = false;
-let missionAccomplished = false;
-
-const BALL_SPEED_X = 6.72;
-const BALL_SPEED_Y = -9.6;
-
-const emojiList = ['🍕','🍔','🍟','🌭','🧇','🥞','🍞','🥐','🥨','🥯','🥖','🌯','🌮','🥪','🥟','🥠','🍜','🍰','🎂','🍪','🍩','🥧'];
-const itemIcons = { pizza: '🍕', noodle: '🍜', bread: '🍞', taco: '🌮' };
-
-const cheers = [
-    "2026 부산 밀 페스티벌 화이팅! ✨", "기획2팀 드디어 해냈다! 💪", "부산의 맛, 밀 페스티벌 기대됩니다! 🌾",
-    "올해 축제는 무조건 대박 예감! 🚀", "밀 맥주 한 잔 하러 부산 갑니다! 🍺", "세상의 모든 밀 요리가 여기에! 🍕",
-    "부산시민이 응원하는 밀 페스티벌! ❤️", "기획2팀 아이디어 최고예요! 👍", "빵순이 빵돌이들 다 모여라~ 🍞",
-    "성공적인 개최를 기원합니다! 🎊", "맛있는 냄새가 여기까지 나네요 🍜", "축제 준비하느라 모두 힘내세요! 🔥",
-    "부산 밀 페스티벌 지역 경제 살린다! 📈", "아이들이 더 좋아하는 밀 페스티벌 🎈", "글로벌 축제로 거듭나길! 🌏",
-    "밀 요리의 끝판왕을 보여주마! 🌮", "기획2팀 화이팅! 🍚", "내년에도 또 와야지 😊",
-    "부산의 새로운 랜드마크 축제 탄생! 건설~ 🏰", "2026년은 부산 밀 페스티벌의 해! 🏆"
-];
-
-function initCheers() {
-    cheers.forEach(msg => {
-        const span = document.createElement('span');
-        span.className = 'banner-text';
-        span.innerText = msg;
-        bannerList.appendChild(span);
-    });
-}
-
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    paddle.y = canvas.height - 70;
-    if (!gameStarted && !missionAccomplished) { initBricks(); resetBall(); }
-}
-
-function initBricks() {
-    bricks = [];
-    const cols = 10; const rows = 5; 
-    const brickW = canvas.width / cols;
-    const brickH = 60;
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            bricks.push({ x: c * brickW, y: r * brickH, w: brickW, h: brickH, status: 1, type: 'normal' });
-        }
-    }
-    const pool = [...Array(5).fill('pizza'), ...Array(5).fill('noodle'), ...Array(3).fill('bread'), ...Array(4).fill('taco')];
-    let shuffled = Array.from({length: bricks.length}, (_, i) => i).sort(() => Math.random() - 0.5);
-    pool.forEach((type, i) => { if (bricks[shuffled[i]]) bricks[shuffled[i]].type = type; });
-}
-
-function resetBall() {
-    balls = [{ x: 0, y: 0, dx: 0, dy: 0, radius: 8, onPaddle: true }];
-    gameStarted = false;
-    syncBallToPaddle();
-}
-
-function syncBallToPaddle() {
-    balls.forEach(ball => {
-        if (ball.onPaddle) {
-            ball.x = paddle.x + paddle.w / 2;
-            ball.y = paddle.y - ball.radius;
-        }
-    });
-}
-
-canvas.addEventListener('mousedown', (e) => {
-    if (!gameStarted && !missionAccomplished) {
-        if (balls.length > 0 && balls[0].onPaddle) {
-            gameStarted = true;
-            balls[0].onPaddle = false; 
-            balls[0].dx = BALL_SPEED_X;
-            balls[0].dy = BALL_SPEED_Y;
-        }
-    }
-    if (missionAccomplished) {
-        popups.push({
-            x: e.clientX, y: e.clientY,
-            text: emojiList[Math.floor(Math.random() * emojiList.length)],
-            scale: 0, maxScale: 1.2, alpha: 1, startTime: Date.now() 
-        });
-    }
-});
-
-window.addEventListener('mousemove', (e) => {
-    paddle.x = e.clientX - paddle.w / 2;
-    if (paddle.x < 0) paddle.x = 0;
-    if (paddle.x + paddle.w > canvas.width) paddle.x = canvas.width - paddle.w;
-    if (!gameStarted) syncBallToPaddle();
-});
-
-function triggerEnding() {
-    missionAccomplished = true;
-    gameStarted = false;
-    bgOverlay.style.opacity = 1; 
-    canvas.style.zIndex = "300"; 
-    
-    setTimeout(() => {
-        uiLayer.style.display = "block";
-        bottomBanner.style.display = "flex";
-        setTimeout(() => { uiPrompt.classList.add('blink-fade-in'); }, 1000);
-    }, 1000);
-}
-
-function update() {
-    if (missionAccomplished) {
-        const now = Date.now();
-        popups.forEach((p, i) => {
-            const elapsed = now - p.startTime;
-            if (elapsed < 300) { p.scale = (elapsed / 300) * p.maxScale; } 
-            else if (elapsed > 1000) { p.alpha -= 0.04; }
-            if (p.alpha <= 0) popups.splice(i, 1);
-        });
-        return;
-    }
-
-    if (!gameStarted) return;
-
-    let remaining = 0;
-    balls.forEach((ball, bIdx) => {
-        if (!ball.onPaddle) {
-            ball.x += ball.dx; ball.y += ball.dy;
-            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.dx *= -1;
-            if (ball.y - ball.radius < 0) ball.dy *= -1;
-            if (ball.y + ball.radius > paddle.y && ball.y < paddle.y + paddle.h && ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
-                ball.dy = -Math.abs(ball.dy);
-                ball.dx = ((ball.x - (paddle.x + paddle.w/2)) / (paddle.w/2)) * 10;
-                ball.y = paddle.y - ball.radius;
-            }
-            if (ball.y > canvas.height + 50) balls.splice(bIdx, 1);
-        }
-    });
-
-    bricks.forEach(brick => {
-        if (brick.status === 1) {
-            remaining++;
-            balls.forEach(ball => {
-                if (!ball.onPaddle && ball.x + ball.radius > brick.x && ball.x - ball.radius < brick.x + brick.w &&
-                    ball.y + ball.radius > brick.y && ball.y - ball.radius < brick.y + brick.h) {
-                    ball.dy *= -1; brick.status = 0;
-                    if (brick.type !== 'normal') items.push({ x: brick.x + brick.w/2, y: brick.y, type: brick.type, vy: 5.5 });
-                }
-            });
-        }
-    });
-
-    items.forEach((item, iIdx) => {
-        item.y += item.vy;
-        if (item.y > paddle.y && item.y < paddle.y + paddle.h && item.x > paddle.x && item.x < paddle.x + paddle.w) {
-            if (item.type === 'pizza') balls.push({ x: item.x, y: item.y, dx: 5, dy: -8, radius: 8, onPaddle: false });
-            else if (item.type === 'noodle') { 
-                balls.push({ x: item.x, y: item.y, dx: -5, dy: -8, radius: 8, onPaddle: false }); 
-                balls.push({ x: item.x, y: item.y, dx: 5, dy: -8, radius: 8, onPaddle: false }); 
-            }
-            else if (item.type === 'bread') { for(let i=0; i<3; i++) balls.push({ x: item.x, y: item.y, dx: (i-1)*6, dy: -9, radius: 8, onPaddle: false }); }
-            else if (item.type === 'taco') paddle.w *= 1.3;
-            items.splice(iIdx, 1);
-        }
-    });
-    
-    if (remaining === 0 && gameStarted) triggerEnding();
-    if (balls.length === 0 && gameStarted) resetBall();
-}
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    if (!missionAccomplished) {
-        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.save();
-        const mainFontSize = Math.min(canvas.width / 10, 130);
-        ctx.font = `800 ${mainFontSize}px 'Nanum Gothic'`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillStyle = "#fff"; 
-        
-        // 메인 타이틀
-        ctx.fillText("2026 부산 밀 페스티벌", canvas.width / 2, 140);
-        
-        // [수정] 행간을 기존 0.45에서 0.8로 대폭 확대하여 가독성 확보
-        ctx.font = `800 ${mainFontSize * 0.4}px 'Nanum Gothic'`;
-        ctx.fillText("2026.05.09-10", canvas.width / 2, 140 + (mainFontSize * 0.8));
-        ctx.restore();
-
-        bricks.forEach(brick => { 
-            if (brick.status === 1) { 
-                ctx.fillStyle = "#ED9121"; 
-                ctx.fillRect(brick.x, brick.y, brick.w, brick.h); 
-                ctx.strokeStyle = "rgba(0,0,0,0.3)"; 
-                ctx.strokeRect(brick.x, brick.y, brick.w, brick.h); 
-            } 
-        });
-
-        items.forEach(item => { ctx.font = "60px serif"; ctx.textAlign = "center"; ctx.fillText(itemIcons[item.type], item.x, item.y); });
-        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(paddle.x, paddle.y, paddle.w, paddle.h, 7); ctx.fill();
-        balls.forEach(ball => { ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); ctx.fill(); });
-    }
-
-    popups.forEach((p) => { 
-        ctx.save();
-        ctx.globalAlpha = p.alpha;
-        ctx.font = `${140 * p.scale}px serif`; 
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(p.text, p.x, p.y);
-        ctx.restore();
-    });
-
-    update();
-    requestAnimationFrame(draw);
-}
-
-initCheers();
-resize();
-window.addEventListener('resize', resize);
-draw();
-</script>
-</body>
-</html>
